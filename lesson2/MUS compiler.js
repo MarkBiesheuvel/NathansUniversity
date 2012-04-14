@@ -19,8 +19,12 @@ var helper = function (time, result, expr) {
         var t0 = helper(time, result, expr.left);
         var t1 = helper(time, result, expr.right);
         // Take maximum of two parrelel pieces
-        return Math.max(t0, t1);     
-    }else{
+        return Math.max(t0, t1);  
+        
+    }else if(expr.tag=='rest'){
+        return time + expr.dur;
+        
+    }else {
         expr.start = time;
         result.push(expr);
         return time + expr.dur;
