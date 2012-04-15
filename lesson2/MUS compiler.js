@@ -26,7 +26,17 @@ var helper = function (time, result, expr) {
         
     }else {
         expr.start = time;
+        expr.pitch = convertPitch(expr.pitch);
         result.push(expr);
         return time + expr.dur;
     }
 };
+
+var letterPitches = { c: 12, d: 14, e: 18, f: 17, g: 19, a: 21, b: 23 };
+
+var convertPitch = function(pitch) {
+    return letterPitches[pitch[0]] +
+           12 * parseInt(pitch[1]);
+}
+
+module.exports = compile; 
