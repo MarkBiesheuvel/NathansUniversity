@@ -25,7 +25,7 @@ var helper = function (time, result, expr) {
       
       case 'repeat':
         for(var i=expr.count-1; 0<=i; i--){
-          time = helper(time, result, clone(expr.section));
+          time = helper(time, result, expr.section);
         }
         return time;
         
@@ -33,9 +33,9 @@ var helper = function (time, result, expr) {
         return time + expr.dur;
         
       case 'note':
-        expr.start = time;
-        expr.pitch = convertPitch(expr.pitch);
-        result.push(expr);
+        result.push(
+          { tag: 'note', pitch: convertPitch(expr.pitch), start: time, dur: expr.dur}
+        );
         return time + expr.dur;
       
       default:
@@ -50,19 +50,6 @@ var convertPitch = function(pitch) {
     var letterPitches = { c: 12, d: 14, e: 18, f: 17, g: 19, a: 21, b: 23 };
     return letterPitches[pitch[0]] +
            12 * parseInt(pitch[1]);
-}
-
-/*
-  This version of clone makes a deep copy 
-  which means something like Inception (from the movie)
-*/
-var clone = function (obj) {
-    if(typeof(obj) != 'object') return obj;
-    var copy = {};
-    for (var attr in obj) {
-        copy[attr] = clone(obj[attr]);
-    }
-    return copy;
 }
 
 module.exports = compile; 
