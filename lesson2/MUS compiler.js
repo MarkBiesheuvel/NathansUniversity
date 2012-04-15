@@ -5,7 +5,7 @@ var compile = function (musexpr) {
 };
 
 /*
-This helper function does two things at a time
+  This helper function does two things at a time
    - it appends the NOTE bytecode to the end of result
    - it returns the ending time
 */
@@ -22,6 +22,12 @@ var helper = function (time, result, expr) {
         var t1 = helper(time, result, expr.right);
         // Take maximum of two parrelel pieces
         return Math.max(t0, t1);  
+      
+      case 'repeat':
+        for(var i=expr.count-1; 0<=i; i--){
+          time = helper(time, result, clone(expr.section));
+        }
+        return time;
         
       case 'rest':
         return time + expr.dur;
@@ -37,11 +43,26 @@ var helper = function (time, result, expr) {
     }
 };
 
-var letterPitches = { c: 12, d: 14, e: 18, f: 17, g: 19, a: 21, b: 23 };
-
+/*
+  Converter for pitches
+*/
 var convertPitch = function(pitch) {
+    var letterPitches = { c: 12, d: 14, e: 18, f: 17, g: 19, a: 21, b: 23 };
     return letterPitches[pitch[0]] +
            12 * parseInt(pitch[1]);
+}
+
+/*
+  This version of clone makes a deep copy 
+  which means something like Inception (from the movie)
+*/
+var clone = function (obj) {
+    if(typeof(obj) != 'object') return obj;
+    var copy = {};
+    for (var attr in obj) {
+        copy[attr] = clone(obj[attr]);
+    }
+    return copy;
 }
 
 module.exports = compile; 
