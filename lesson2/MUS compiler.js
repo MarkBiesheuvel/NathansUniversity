@@ -10,25 +10,30 @@ This helper function does two things at a time
    - it returns the ending time
 */
 var helper = function (time, result, expr) {
-    if(expr.tag=='seq'){
+    switch(expr.tag){
+    
+      case 'seq':
         //Take endtime as new start time
         time = helper(time, result, expr.left);
         return helper(time, result, expr.right);
         
-    }else if(expr.tag=='par'){
+      case 'par':
         var t0 = helper(time, result, expr.left);
         var t1 = helper(time, result, expr.right);
         // Take maximum of two parrelel pieces
         return Math.max(t0, t1);  
         
-    }else if(expr.tag=='rest'){
+      case 'rest':
         return time + expr.dur;
         
-    }else {
+      case 'note':
         expr.start = time;
         expr.pitch = convertPitch(expr.pitch);
         result.push(expr);
         return time + expr.dur;
+      
+      default:
+        return time;
     }
 };
 
