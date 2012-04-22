@@ -1,0 +1,23 @@
+start =
+    space* expr:expression space*
+        { return expr; }
+
+expression =
+     "(" space* x:expression tail:spaceexpr* space* ")"
+        { return [x].concat(tail) }
+ /  x:atom
+        { return x; }
+    
+spaceexpr = 
+    space+ x:expression
+        { return x; }
+
+atom =
+    chars:valid+
+        { return chars.join(""); }
+        
+valid =
+    [0-9a-zA-Z_?!+-=@#$%^&*/.]
+    
+space =
+    [ \t\r\n]
