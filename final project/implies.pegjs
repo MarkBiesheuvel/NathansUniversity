@@ -7,11 +7,15 @@ assignnumber =
   { return {variable:v, number:n}; }
 
 assignrule = 
-  v:variable leftarrow e:rulelist ws*
-  { return {variable:v, expression:e}; }
+  o:operator leftarrow r:rulelist ws*
+  { return {operator:o, rules:r}; }
   
+operator = 
+  ws* chars:chars+
+  { return chars.join(''); }
+
 variable = 
-  ws* letters:[a-zA-Z]+
+  ws* letters:letter+
   { return letters.join(''); }
 
 number = 
@@ -19,9 +23,13 @@ number =
   { return digits.join(''); } 
 
 rulelist = 
-  beginlist r:rule endlist
-  { return r; } 
+  beginlist r:rule cr:commarule* endlist
+  { return [r].concat(cr); } 
 
+commarule = 
+  comma r:rule
+  { return r;}
+  
 rule = 
   pat:pattern rightarrow res:bit
   { pat.result = res; return pat; } 
@@ -31,13 +39,16 @@ pattern =
   { return {left:l.join(''), center:c, right:r.join('')}; }
 
 // Language keywords  
-bit = ws* d:digit {return d;}
+bit = ws* b:digit {return b;}
 beginlist = ws* '{'
 endlist = ws* '}'
 leftarrow = ws* '<-'
 rightarrow = ws* '->'
+comma = ws* ','
 
 // Basic classes
 ws = [ \t\r\n\v\f]
+letter = [a-zA-Z]
+chars = [\x21-\x7E]
 trigit = [01_]
 digit = [01]
