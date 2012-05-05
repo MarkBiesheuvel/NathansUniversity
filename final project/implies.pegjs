@@ -1,25 +1,43 @@
 start =
-  expression
+  assignnumber
+/ assignrule  
   
-expression = 
-  name:variable leftarrow expr:rulelist                   { return [name, expr]; }
-/ name:variable leftarrow num:number                      { return [name, num]; }
+assignnumber = 
+  v:variable leftarrow n:number ws*
+  { return {variable:v, number:n}; }
 
-variable = letters:[a-zA-Z]+                              { return letters.join(''); }
+assignrule = 
+  v:variable leftarrow e:rulelist ws*
+  { return {variable:v, expression:e}; }
+  
+variable = 
+  ws* letters:[a-zA-Z]+
+  { return letters.join(''); }
 
-number = digits:digit+                                    { return digits.join(''); } 
+number = 
+  ws* digits:digit+
+  { return digits.join(''); } 
 
-rulelist = '{' r:rule '}'                                 { return r; } 
+rulelist = 
+  beginlist r:rule endlist
+  { return r; } 
 
-rule = pat:pattern rightarrow res:digit                   { pat.result = res; return pat; } 
+rule = 
+  pat:pattern rightarrow res:bit
+  { pat.result = res; return pat; } 
 
-pattern = l:digitplus* '[' c:digitplus ']' r:digitplus*   { return {left:l, center:c, right:r}; }
+pattern = 
+  ws* l:trigit* '[' c:trigit ']' r:trigit*
+  { return {left:l.join(''), center:c, right:r.join('')}; }
 
-digitplus = 
-  d:digit                                                 { return d; }
-/ d:'_'                                                   { return d; }
+// Language keywords  
+bit = ws* d:digit {return d;}
+beginlist = ws* '{'
+endlist = ws* '}'
+leftarrow = ws* '<-'
+rightarrow = ws* '->'
 
+// Basic classes
+ws = [ \t\r\n\v\f]
+trigit = [01_]
 digit = [01]
-
-leftarrow = '<-'
-rightarrow = '->'

@@ -37,16 +37,22 @@ module.exports = (function(){
      */
     parse: function(input, startRule) {
       var parseFunctions = {
-        "expression": parse_expression,
+        "start": parse_start,
+        "assignnumber": parse_assignnumber,
+        "assignrule": parse_assignrule,
         "variable": parse_variable,
         "number": parse_number,
         "rulelist": parse_rulelist,
         "rule": parse_rule,
         "pattern": parse_pattern,
-        "digitplus": parse_digitplus,
-        "digit": parse_digit,
+        "bit": parse_bit,
+        "beginlist": parse_beginlist,
+        "endlist": parse_endlist,
         "leftarrow": parse_leftarrow,
-        "rightarrow": parse_rightarrow
+        "rightarrow": parse_rightarrow,
+        "ws": parse_ws,
+        "trigit": parse_trigit,
+        "digit": parse_digit
       };
       
       if (startRule !== undefined) {
@@ -54,7 +60,7 @@ module.exports = (function(){
           throw new Error("Invalid rule name: " + quote(startRule) + ".");
         }
       } else {
-        startRule = "expression";
+        startRule = "start";
       }
       
       var pos = 0;
@@ -102,8 +108,18 @@ module.exports = (function(){
         rightmostFailuresExpected.push(failure);
       }
       
-      function parse_expression() {
-        var result0, result1, result2;
+      function parse_start() {
+        var result0;
+        
+        result0 = parse_assignnumber();
+        if (result0 === null) {
+          result0 = parse_assignrule();
+        }
+        return result0;
+      }
+      
+      function parse_assignnumber() {
+        var result0, result1, result2, result3, result4;
         var pos0, pos1;
         
         pos0 = pos;
@@ -112,9 +128,20 @@ module.exports = (function(){
         if (result0 !== null) {
           result1 = parse_leftarrow();
           if (result1 !== null) {
-            result2 = parse_rulelist();
+            result2 = parse_number();
             if (result2 !== null) {
-              result0 = [result0, result1, result2];
+              result3 = [];
+              result4 = parse_ws();
+              while (result4 !== null) {
+                result3.push(result4);
+                result4 = parse_ws();
+              }
+              if (result3 !== null) {
+                result0 = [result0, result1, result2, result3];
+              } else {
+                result0 = null;
+                pos = pos1;
+              }
             } else {
               result0 = null;
               pos = pos1;
@@ -128,21 +155,34 @@ module.exports = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, name, expr) { return [name, expr]; })(pos0, result0[0], result0[2]);
+          result0 = (function(offset, v, n) { return {variable:v, number:n}; })(pos0, result0[0], result0[2]);
         }
         if (result0 === null) {
           pos = pos0;
         }
-        if (result0 === null) {
-          pos0 = pos;
-          pos1 = pos;
-          result0 = parse_variable();
-          if (result0 !== null) {
-            result1 = parse_leftarrow();
-            if (result1 !== null) {
-              result2 = parse_number();
-              if (result2 !== null) {
-                result0 = [result0, result1, result2];
+        return result0;
+      }
+      
+      function parse_assignrule() {
+        var result0, result1, result2, result3, result4;
+        var pos0, pos1;
+        
+        pos0 = pos;
+        pos1 = pos;
+        result0 = parse_variable();
+        if (result0 !== null) {
+          result1 = parse_leftarrow();
+          if (result1 !== null) {
+            result2 = parse_rulelist();
+            if (result2 !== null) {
+              result3 = [];
+              result4 = parse_ws();
+              while (result4 !== null) {
+                result3.push(result4);
+                result4 = parse_ws();
+              }
+              if (result3 !== null) {
+                result0 = [result0, result1, result2, result3];
               } else {
                 result0 = null;
                 pos = pos1;
@@ -155,49 +195,70 @@ module.exports = (function(){
             result0 = null;
             pos = pos1;
           }
-          if (result0 !== null) {
-            result0 = (function(offset, name, num) { return [name, num]; })(pos0, result0[0], result0[2]);
-          }
-          if (result0 === null) {
-            pos = pos0;
-          }
+        } else {
+          result0 = null;
+          pos = pos1;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, v, e) { return {variable:v, expression:e}; })(pos0, result0[0], result0[2]);
+        }
+        if (result0 === null) {
+          pos = pos0;
         }
         return result0;
       }
       
       function parse_variable() {
-        var result0, result1;
-        var pos0;
+        var result0, result1, result2;
+        var pos0, pos1;
         
         pos0 = pos;
-        if (/^[a-zA-Z]/.test(input.charAt(pos))) {
-          result1 = input.charAt(pos);
-          pos++;
-        } else {
-          result1 = null;
-          if (reportFailures === 0) {
-            matchFailed("[a-zA-Z]");
-          }
+        pos1 = pos;
+        result0 = [];
+        result1 = parse_ws();
+        while (result1 !== null) {
+          result0.push(result1);
+          result1 = parse_ws();
         }
-        if (result1 !== null) {
-          result0 = [];
-          while (result1 !== null) {
-            result0.push(result1);
-            if (/^[a-zA-Z]/.test(input.charAt(pos))) {
-              result1 = input.charAt(pos);
-              pos++;
-            } else {
-              result1 = null;
-              if (reportFailures === 0) {
-                matchFailed("[a-zA-Z]");
+        if (result0 !== null) {
+          if (/^[a-zA-Z]/.test(input.charAt(pos))) {
+            result2 = input.charAt(pos);
+            pos++;
+          } else {
+            result2 = null;
+            if (reportFailures === 0) {
+              matchFailed("[a-zA-Z]");
+            }
+          }
+          if (result2 !== null) {
+            result1 = [];
+            while (result2 !== null) {
+              result1.push(result2);
+              if (/^[a-zA-Z]/.test(input.charAt(pos))) {
+                result2 = input.charAt(pos);
+                pos++;
+              } else {
+                result2 = null;
+                if (reportFailures === 0) {
+                  matchFailed("[a-zA-Z]");
+                }
               }
             }
+          } else {
+            result1 = null;
+          }
+          if (result1 !== null) {
+            result0 = [result0, result1];
+          } else {
+            result0 = null;
+            pos = pos1;
           }
         } else {
           result0 = null;
+          pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, letters) { return letters.join(''); })(pos0, result0);
+          result0 = (function(offset, letters) { return letters.join(''); })(pos0, result0[1]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -206,22 +267,40 @@ module.exports = (function(){
       }
       
       function parse_number() {
-        var result0, result1;
-        var pos0;
+        var result0, result1, result2;
+        var pos0, pos1;
         
         pos0 = pos;
-        result1 = parse_digit();
-        if (result1 !== null) {
-          result0 = [];
-          while (result1 !== null) {
-            result0.push(result1);
-            result1 = parse_digit();
+        pos1 = pos;
+        result0 = [];
+        result1 = parse_ws();
+        while (result1 !== null) {
+          result0.push(result1);
+          result1 = parse_ws();
+        }
+        if (result0 !== null) {
+          result2 = parse_digit();
+          if (result2 !== null) {
+            result1 = [];
+            while (result2 !== null) {
+              result1.push(result2);
+              result2 = parse_digit();
+            }
+          } else {
+            result1 = null;
+          }
+          if (result1 !== null) {
+            result0 = [result0, result1];
+          } else {
+            result0 = null;
+            pos = pos1;
           }
         } else {
           result0 = null;
+          pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, digits) { return digits.join(''); })(pos0, result0);
+          result0 = (function(offset, digits) { return digits.join(''); })(pos0, result0[1]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -235,27 +314,11 @@ module.exports = (function(){
         
         pos0 = pos;
         pos1 = pos;
-        if (input.charCodeAt(pos) === 123) {
-          result0 = "{";
-          pos++;
-        } else {
-          result0 = null;
-          if (reportFailures === 0) {
-            matchFailed("\"{\"");
-          }
-        }
+        result0 = parse_beginlist();
         if (result0 !== null) {
           result1 = parse_rule();
           if (result1 !== null) {
-            if (input.charCodeAt(pos) === 125) {
-              result2 = "}";
-              pos++;
-            } else {
-              result2 = null;
-              if (reportFailures === 0) {
-                matchFailed("\"}\"");
-              }
-            }
+            result2 = parse_endlist();
             if (result2 !== null) {
               result0 = [result0, result1, result2];
             } else {
@@ -289,7 +352,7 @@ module.exports = (function(){
         if (result0 !== null) {
           result1 = parse_rightarrow();
           if (result1 !== null) {
-            result2 = parse_digit();
+            result2 = parse_bit();
             if (result2 !== null) {
               result0 = [result0, result1, result2];
             } else {
@@ -314,48 +377,59 @@ module.exports = (function(){
       }
       
       function parse_pattern() {
-        var result0, result1, result2, result3, result4, result5;
+        var result0, result1, result2, result3, result4, result5, result6;
         var pos0, pos1;
         
         pos0 = pos;
         pos1 = pos;
         result0 = [];
-        result1 = parse_digitplus();
+        result1 = parse_ws();
         while (result1 !== null) {
           result0.push(result1);
-          result1 = parse_digitplus();
+          result1 = parse_ws();
         }
         if (result0 !== null) {
-          if (input.charCodeAt(pos) === 91) {
-            result1 = "[";
-            pos++;
-          } else {
-            result1 = null;
-            if (reportFailures === 0) {
-              matchFailed("\"[\"");
-            }
+          result1 = [];
+          result2 = parse_trigit();
+          while (result2 !== null) {
+            result1.push(result2);
+            result2 = parse_trigit();
           }
           if (result1 !== null) {
-            result2 = parse_digitplus();
-            if (result2 !== null) {
-              if (input.charCodeAt(pos) === 93) {
-                result3 = "]";
-                pos++;
-              } else {
-                result3 = null;
-                if (reportFailures === 0) {
-                  matchFailed("\"]\"");
-                }
+            if (input.charCodeAt(pos) === 91) {
+              result2 = "[";
+              pos++;
+            } else {
+              result2 = null;
+              if (reportFailures === 0) {
+                matchFailed("\"[\"");
               }
+            }
+            if (result2 !== null) {
+              result3 = parse_trigit();
               if (result3 !== null) {
-                result4 = [];
-                result5 = parse_digitplus();
-                while (result5 !== null) {
-                  result4.push(result5);
-                  result5 = parse_digitplus();
+                if (input.charCodeAt(pos) === 93) {
+                  result4 = "]";
+                  pos++;
+                } else {
+                  result4 = null;
+                  if (reportFailures === 0) {
+                    matchFailed("\"]\"");
+                  }
                 }
                 if (result4 !== null) {
-                  result0 = [result0, result1, result2, result3, result4];
+                  result5 = [];
+                  result6 = parse_trigit();
+                  while (result6 !== null) {
+                    result5.push(result6);
+                    result6 = parse_trigit();
+                  }
+                  if (result5 !== null) {
+                    result0 = [result0, result1, result2, result3, result4, result5];
+                  } else {
+                    result0 = null;
+                    pos = pos1;
+                  }
                 } else {
                   result0 = null;
                   pos = pos1;
@@ -377,7 +451,7 @@ module.exports = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, l, c, r) { return {left:l, center:c, right:r}; })(pos0, result0[0], result0[2], result0[4]);
+          result0 = (function(offset, l, c, r) { return {left:l.join(''), center:c, right:r.join('')}; })(pos0, result0[1], result0[3], result0[5]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -385,34 +459,200 @@ module.exports = (function(){
         return result0;
       }
       
-      function parse_digitplus() {
-        var result0;
-        var pos0;
+      function parse_bit() {
+        var result0, result1;
+        var pos0, pos1;
         
         pos0 = pos;
-        result0 = parse_digit();
+        pos1 = pos;
+        result0 = [];
+        result1 = parse_ws();
+        while (result1 !== null) {
+          result0.push(result1);
+          result1 = parse_ws();
+        }
         if (result0 !== null) {
-          result0 = (function(offset, d) { return d; })(pos0, result0);
+          result1 = parse_digit();
+          if (result1 !== null) {
+            result0 = [result0, result1];
+          } else {
+            result0 = null;
+            pos = pos1;
+          }
+        } else {
+          result0 = null;
+          pos = pos1;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, d) {return d;})(pos0, result0[1]);
         }
         if (result0 === null) {
           pos = pos0;
         }
-        if (result0 === null) {
-          pos0 = pos;
-          if (input.charCodeAt(pos) === 95) {
-            result0 = "_";
+        return result0;
+      }
+      
+      function parse_beginlist() {
+        var result0, result1;
+        var pos0;
+        
+        pos0 = pos;
+        result0 = [];
+        result1 = parse_ws();
+        while (result1 !== null) {
+          result0.push(result1);
+          result1 = parse_ws();
+        }
+        if (result0 !== null) {
+          if (input.charCodeAt(pos) === 123) {
+            result1 = "{";
             pos++;
           } else {
-            result0 = null;
+            result1 = null;
             if (reportFailures === 0) {
-              matchFailed("\"_\"");
+              matchFailed("\"{\"");
             }
           }
-          if (result0 !== null) {
-            result0 = (function(offset, d) { return d; })(pos0, result0);
-          }
-          if (result0 === null) {
+          if (result1 !== null) {
+            result0 = [result0, result1];
+          } else {
+            result0 = null;
             pos = pos0;
+          }
+        } else {
+          result0 = null;
+          pos = pos0;
+        }
+        return result0;
+      }
+      
+      function parse_endlist() {
+        var result0, result1;
+        var pos0;
+        
+        pos0 = pos;
+        result0 = [];
+        result1 = parse_ws();
+        while (result1 !== null) {
+          result0.push(result1);
+          result1 = parse_ws();
+        }
+        if (result0 !== null) {
+          if (input.charCodeAt(pos) === 125) {
+            result1 = "}";
+            pos++;
+          } else {
+            result1 = null;
+            if (reportFailures === 0) {
+              matchFailed("\"}\"");
+            }
+          }
+          if (result1 !== null) {
+            result0 = [result0, result1];
+          } else {
+            result0 = null;
+            pos = pos0;
+          }
+        } else {
+          result0 = null;
+          pos = pos0;
+        }
+        return result0;
+      }
+      
+      function parse_leftarrow() {
+        var result0, result1;
+        var pos0;
+        
+        pos0 = pos;
+        result0 = [];
+        result1 = parse_ws();
+        while (result1 !== null) {
+          result0.push(result1);
+          result1 = parse_ws();
+        }
+        if (result0 !== null) {
+          if (input.substr(pos, 2) === "<-") {
+            result1 = "<-";
+            pos += 2;
+          } else {
+            result1 = null;
+            if (reportFailures === 0) {
+              matchFailed("\"<-\"");
+            }
+          }
+          if (result1 !== null) {
+            result0 = [result0, result1];
+          } else {
+            result0 = null;
+            pos = pos0;
+          }
+        } else {
+          result0 = null;
+          pos = pos0;
+        }
+        return result0;
+      }
+      
+      function parse_rightarrow() {
+        var result0, result1;
+        var pos0;
+        
+        pos0 = pos;
+        result0 = [];
+        result1 = parse_ws();
+        while (result1 !== null) {
+          result0.push(result1);
+          result1 = parse_ws();
+        }
+        if (result0 !== null) {
+          if (input.substr(pos, 2) === "->") {
+            result1 = "->";
+            pos += 2;
+          } else {
+            result1 = null;
+            if (reportFailures === 0) {
+              matchFailed("\"->\"");
+            }
+          }
+          if (result1 !== null) {
+            result0 = [result0, result1];
+          } else {
+            result0 = null;
+            pos = pos0;
+          }
+        } else {
+          result0 = null;
+          pos = pos0;
+        }
+        return result0;
+      }
+      
+      function parse_ws() {
+        var result0;
+        
+        if (/^[ \t\r\n\x0B\f]/.test(input.charAt(pos))) {
+          result0 = input.charAt(pos);
+          pos++;
+        } else {
+          result0 = null;
+          if (reportFailures === 0) {
+            matchFailed("[ \\t\\r\\n\\x0B\\f]");
+          }
+        }
+        return result0;
+      }
+      
+      function parse_trigit() {
+        var result0;
+        
+        if (/^[01_]/.test(input.charAt(pos))) {
+          result0 = input.charAt(pos);
+          pos++;
+        } else {
+          result0 = null;
+          if (reportFailures === 0) {
+            matchFailed("[01_]");
           }
         }
         return result0;
@@ -428,36 +668,6 @@ module.exports = (function(){
           result0 = null;
           if (reportFailures === 0) {
             matchFailed("[01]");
-          }
-        }
-        return result0;
-      }
-      
-      function parse_leftarrow() {
-        var result0;
-        
-        if (input.substr(pos, 2) === "<-") {
-          result0 = "<-";
-          pos += 2;
-        } else {
-          result0 = null;
-          if (reportFailures === 0) {
-            matchFailed("\"<-\"");
-          }
-        }
-        return result0;
-      }
-      
-      function parse_rightarrow() {
-        var result0;
-        
-        if (input.substr(pos, 2) === "->") {
-          result0 = "->";
-          pos += 2;
-        } else {
-          result0 = null;
-          if (reportFailures === 0) {
-            matchFailed("\"->\"");
           }
         }
         return result0;
