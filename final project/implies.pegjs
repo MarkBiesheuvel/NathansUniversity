@@ -9,18 +9,18 @@ assignnumber =
 assignrule = 
   o:operator leftarrow r:rulelist ws*
   { return {operator:o, rules:r}; }
-  
+
 operator = 
-  ws* chars:chars+
-  { return chars.join(''); }
+  ws* c:chars+
+  { return c.join(''); }
 
 variable = 
-  ws* letters:letter+
-  { return letters.join(''); }
+  ws* l:letter+
+  { return l.join(''); }
 
 number = 
-  ws* digits:digit+
-  { return digits.join(''); } 
+  ws* d:digit+
+  { return d.join(''); } 
 
 rulelist = 
   beginlist r:rule cr:commarule* endlist
@@ -31,8 +31,8 @@ commarule =
   { return r;}
   
 rule = 
-  pat:pattern rightarrow res:bit
-  { pat.result = res; return pat; } 
+  p:pattern+ rightarrow r:bit
+  { return { patterns:p, result:r }; }
 
 pattern = 
   ws* l:trigit* '[' c:trigit ']' r:trigit*

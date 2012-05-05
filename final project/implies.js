@@ -418,7 +418,16 @@ module.exports = (function(){
         
         pos0 = pos;
         pos1 = pos;
-        result0 = parse_pattern();
+        result1 = parse_pattern();
+        if (result1 !== null) {
+          result0 = [];
+          while (result1 !== null) {
+            result0.push(result1);
+            result1 = parse_pattern();
+          }
+        } else {
+          result0 = null;
+        }
         if (result0 !== null) {
           result1 = parse_rightarrow();
           if (result1 !== null) {
@@ -438,7 +447,7 @@ module.exports = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, pat, res) { pat.result = res; return pat; })(pos0, result0[0], result0[2]);
+          result0 = (function(offset, p, r) { return { patterns:p, result:r }; })(pos0, result0[0], result0[2]);
         }
         if (result0 === null) {
           pos = pos0;
