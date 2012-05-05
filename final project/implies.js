@@ -40,6 +40,10 @@ module.exports = (function(){
         "start": parse_start,
         "assignnumber": parse_assignnumber,
         "assignrule": parse_assignrule,
+        "applyrule": parse_applyrule,
+        "expression": parse_expression,
+        "infix": parse_infix,
+        "prefix": parse_prefix,
         "operator": parse_operator,
         "variable": parse_variable,
         "number": parse_number,
@@ -119,6 +123,9 @@ module.exports = (function(){
         result0 = parse_assignnumber();
         if (result0 === null) {
           result0 = parse_assignrule();
+          if (result0 === null) {
+            result0 = parse_applyrule();
+          }
         }
         return result0;
       }
@@ -213,6 +220,124 @@ module.exports = (function(){
         return result0;
       }
       
+      function parse_applyrule() {
+        var result0, result1, result2;
+        var pos0, pos1;
+        
+        pos0 = pos;
+        pos1 = pos;
+        result0 = parse_variable();
+        if (result0 !== null) {
+          result1 = parse_leftarrow();
+          if (result1 !== null) {
+            result2 = parse_expression();
+            if (result2 !== null) {
+              result0 = [result0, result1, result2];
+            } else {
+              result0 = null;
+              pos = pos1;
+            }
+          } else {
+            result0 = null;
+            pos = pos1;
+          }
+        } else {
+          result0 = null;
+          pos = pos1;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, v, e) { return {variable:v, expression:e}; })(pos0, result0[0], result0[2]);
+        }
+        if (result0 === null) {
+          pos = pos0;
+        }
+        return result0;
+      }
+      
+      function parse_expression() {
+        var result0;
+        
+        result0 = parse_infix();
+        if (result0 === null) {
+          result0 = parse_prefix();
+          if (result0 === null) {
+            result0 = parse_variable();
+          }
+        }
+        return result0;
+      }
+      
+      function parse_infix() {
+        var result0, result1, result2;
+        var pos0, pos1;
+        
+        pos0 = pos;
+        pos1 = pos;
+        result0 = parse_variable();
+        if (result0 !== null) {
+          result1 = parse_operator();
+          if (result1 !== null) {
+            result2 = parse_variable();
+            if (result2 !== null) {
+              result0 = [result0, result1, result2];
+            } else {
+              result0 = null;
+              pos = pos1;
+            }
+          } else {
+            result0 = null;
+            pos = pos1;
+          }
+        } else {
+          result0 = null;
+          pos = pos1;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, v, o, w) { return {operator:o, variables:[v,w]}; })(pos0, result0[0], result0[1], result0[2]);
+        }
+        if (result0 === null) {
+          pos = pos0;
+        }
+        return result0;
+      }
+      
+      function parse_prefix() {
+        var result0, result1, result2;
+        var pos0, pos1;
+        
+        pos0 = pos;
+        pos1 = pos;
+        result0 = parse_operator();
+        if (result0 !== null) {
+          result2 = parse_variable();
+          if (result2 !== null) {
+            result1 = [];
+            while (result2 !== null) {
+              result1.push(result2);
+              result2 = parse_variable();
+            }
+          } else {
+            result1 = null;
+          }
+          if (result1 !== null) {
+            result0 = [result0, result1];
+          } else {
+            result0 = null;
+            pos = pos1;
+          }
+        } else {
+          result0 = null;
+          pos = pos1;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, o, v) { return {operator:o, variables:v}; })(pos0, result0[0], result0[1]);
+        }
+        if (result0 === null) {
+          pos = pos0;
+        }
+        return result0;
+      }
+      
       function parse_operator() {
         var result0, result1, result2;
         var pos0, pos1;
@@ -247,7 +372,7 @@ module.exports = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, chars) { return chars.join(''); })(pos0, result0[1]);
+          result0 = (function(offset, c) { return c.join(''); })(pos0, result0[1]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -289,7 +414,7 @@ module.exports = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, letters) { return letters.join(''); })(pos0, result0[1]);
+          result0 = (function(offset, l) { return l.join(''); })(pos0, result0[1]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -331,7 +456,7 @@ module.exports = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, digits) { return digits.join(''); })(pos0, result0[1]);
+          result0 = (function(offset, d) { return d.join(''); })(pos0, result0[1]);
         }
         if (result0 === null) {
           pos = pos0;

@@ -1,6 +1,7 @@
 start =
   assignnumber
 / assignrule  
+/ applyrule
   
 assignnumber = 
   v:variable leftarrow n:number ws*
@@ -9,6 +10,23 @@ assignnumber =
 assignrule = 
   o:operator leftarrow r:rulelist ws*
   { return {operator:o, rules:r}; }
+
+applyrule = 
+  v:variable leftarrow e:expression
+  { return {variable:v, expression:e}; }
+  
+expression = 
+  infix
+/ prefix
+/ variable
+
+infix = 
+  v:variable o:operator w:variable
+  { return {operator:o, variables:[v,w]}; }
+  
+prefix = 
+  o:operator v:variable+
+  { return {operator:o, variables:v}; }
 
 operator = 
   ws* c:chars+
