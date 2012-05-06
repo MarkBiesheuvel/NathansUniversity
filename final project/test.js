@@ -1,4 +1,4 @@
-var parser = require('./implies.js');
+var parser = require('./parser.js');
 
 console.log();
 console.log(parser.parse("a <- 010010011010"));
