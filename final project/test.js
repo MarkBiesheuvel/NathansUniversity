@@ -1,20 +1,20 @@
 var parser = require('./parser.js');
 
-console.log();
-console.log(parser.parse("a <- 010010011010"));
-console.log();
-console.log(parser.parse(" b <- 0101001 "));
-console.log();
-console.log(parser.parse("c<-b"));
-console.log();
-console.log(parser.parse("! <- { [1] -> 0, [0] -> 1}"));
-console.log();
-console.log(parser.parse("& <- { [1] [1] -> 1, [_] [_] -> 0}"));
-console.log();
-console.log(parser.parse("a <- a & b"));
-console.log();
-console.log(parser.parse("b <- & b a"));
-console.log();
-console.log(parser.parse("3*true <- { [_] [_] [_] -> 1}"));
-console.log();
-console.log(parser.parse("c <- 3*true a a b"));
+var testcases = [ "a <- 010010011010",
+                  " b <- 0101001 ",
+                  "c<-b",
+                  "! <- { [1] -> 0, [0] -> 1}",
+                  "& <- { [1] [1] -> 1, [_] [_] -> 0}",
+                  "a <- a & b",
+                  "a <- a & b",
+                  "b <- & b a",
+                  "3*true <- { [_] [_] [_] -> 1}",
+                  "c <- 3*true a a b",
+                  "a <- a and b",
+                  "a <- and a b"];      
+
+var n = testcases.length;
+for(var i=0; i<n; i++){      
+  console.log();
+  console.log(parser.parse(testcases[i]));
+}
