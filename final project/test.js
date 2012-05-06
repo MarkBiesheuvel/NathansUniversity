@@ -1,4 +1,5 @@
 var parser = require('./parser.js');
+var interpreter = require('./interpreter.js');
 
 var testcases = [ "a <- 010010011010",
                   " b <- 0101001 ",
@@ -15,7 +16,10 @@ var testcases = [ "a <- 010010011010",
                   "a <- and a b"];
 
 var n = testcases.length;
+var temp;
 for(var i=0; i<n; i++){      
   console.log();
-  console.log(parser.parse(testcases[i]));
+  temp = parser.parse(testcases[i]);
+  temp = interpreter.interpret(temp);
+  console.log(temp);
 }
