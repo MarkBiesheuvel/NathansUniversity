@@ -16,12 +16,12 @@ applyrule =
   { return {variable:v, expression:e}; }
   
 expression = 
-  infix
-/ prefix
+  prefix
+/ infix
 / variable
 
 infix = 
-  v:variable o:operator w:variable
+  v:variable begininfix? o:operator w:variable
   { return {operator:o, variables:[v,w]}; }
   
 prefix = 
@@ -53,16 +53,19 @@ rule =
   { return { patterns:p, result:r }; }
 
 pattern = 
-  ws* l:trigit* '[' c:trigit ']' r:trigit*
+  ws* l:trigit* begincenter c:trigit endcenter r:trigit*
   { return {left:l.join(''), center:c, right:r.join('')}; }
 
 // Language keywords  
 bit = ws* b:digit {return b;}
-beginlist = ws* '{'
-endlist = ws* '}'
 leftarrow = ws* '<-'
 rightarrow = ws* '->'
 comma = ws* ','
+beginlist = ws* '{'
+endlist = ws* '}'
+begininfix = ws* '/'
+begincenter = '['
+endcenter = ']'
 
 // Basic classes
 ws = [ \t\r\n\v\f]
