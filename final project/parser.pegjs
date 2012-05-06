@@ -5,15 +5,15 @@ start =
   
 assignnumber = 
   v:variable leftarrow n:number ws*
-  { return {variable:v, number:n}; }
+  { return {tag:'number', variable:v, number:n}; }
 
 assignrule = 
   o:operator leftarrow r:rulelist ws*
-  { return {operator:o, rules:r}; }
+  { return {tag:'rules', operator:o, rules:r}; }
 
 applyrule = 
   v:variable leftarrow e:expression
-  { return {variable:v, expression:e}; }
+  { return {tag:'expression', variable:v, expression:e}; }
   
 expression = 
   prefix

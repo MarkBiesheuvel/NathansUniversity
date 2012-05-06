@@ -170,7 +170,7 @@ module.exports = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, v, n) { return {variable:v, number:n}; })(pos0, result0[0], result0[2]);
+          result0 = (function(offset, v, n) { return {tag:'number', variable:v, number:n}; })(pos0, result0[0], result0[2]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -215,7 +215,7 @@ module.exports = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, o, r) { return {operator:o, rules:r}; })(pos0, result0[0], result0[2]);
+          result0 = (function(offset, o, r) { return {tag:'rules', operator:o, rules:r}; })(pos0, result0[0], result0[2]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -249,7 +249,7 @@ module.exports = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, v, e) { return {variable:v, expression:e}; })(pos0, result0[0], result0[2]);
+          result0 = (function(offset, v, e) { return {tag:'expression', variable:v, expression:e}; })(pos0, result0[0], result0[2]);
         }
         if (result0 === null) {
           pos = pos0;
